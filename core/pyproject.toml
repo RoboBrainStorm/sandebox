@@ -1,0 +1,20 @@
+[project]
+name = "sandebox-core"
+version = "0.1.0"
+description = "Core Kubernetes and gVisor execution engine for sandebox"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "kubernetes>=31.0",
+    "kubernetes-asyncio>=35.0.1",
+    "pydantic>=2.10",
+    "httpx>=0.28",
+    "structlog>=24.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/core"]

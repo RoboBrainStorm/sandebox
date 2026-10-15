@@ -1,0 +1,16 @@
+# Values are set per-model by the API deployment pipeline.
+# These defaults are only used during `helm lint`.
+
+model:
+  name: "placeholder"
+  workspaceId: "00000000-0000-0000-0000-000000000000"
+  imageTag: "rb-runtime:latest"
+  configPath: "/app/model/config.yaml"
+
+runtime:
+  maxConcurrentRuns: "4"
+  timeoutSeconds: "300"
+
+knative:
+  minScale: 0   # scale-to-zero when idle
+  maxScale: 5

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: sandbox-pod
+description: Knative Service template for an sandebox isolated workload.
+type: application
+version: 0.1.0

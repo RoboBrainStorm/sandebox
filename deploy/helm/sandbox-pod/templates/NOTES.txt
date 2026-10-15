@@ -1,0 +1,11 @@
+Model pod deployed:
+  Name:      model-{{ .Values.model.name }}
+  Workspace: {{ .Values.model.workspaceId }}
+  Image:     {{ .Values.model.imageTag }}
+
+Health check (once pod is warm):
+  kubectl get ksvc model-{{ .Values.model.name }} \
+    -n ws-{{ .Values.model.workspaceId | trunc 8 }}
+
+Scale-to-zero is enabled (min-scale={{ .Values.knative.minScale }}).
+Cold-start latency on first request: typically 2–5s.

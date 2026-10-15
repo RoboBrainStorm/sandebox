@@ -1,0 +1,17 @@
+[project]
+name = "sandebox"
+version = "0.1.0"
+description = "Official Python SDK for sandebox control-plane API"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.28",
+    "pydantic>=2.10",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sandebox"]

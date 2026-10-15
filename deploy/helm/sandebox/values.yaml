@@ -1,0 +1,64 @@
+# Default values for sandebox.
+requiredRuntimeClass: gvisor
+
+server:
+  image:
+    repository: ghcr.io/robobrainstorm/sandebox-server
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+admin:
+  enabled: true
+  image:
+    repository: ghcr.io/robobrainstorm/sandebox-admin
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: sandebox.local
+      paths:
+        - path: /
+          pathType: Prefix
+          port: 80
+        - path: /v1
+          pathType: Prefix
+          port: 8000
+
+rbac:
+  create: true
+  serviceAccountName: sandebox-controller
+
+secrets:
+  apiKey: "sk-sandebox-admin-initial-key"
+  adminToken: "sandebox-admin-token"
+
+knative:
+  enabled: true
+  namespace: "sandebox"
+  minScale: 0
+  maxScale: 1

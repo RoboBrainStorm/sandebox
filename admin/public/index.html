@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sandebox Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <span class="text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">sandebox</span>
+      <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">gVisor Isolated</span>
+    </div>
+    <div class="flex items-center space-x-4">
+      <input id="serverUrl" type="text" placeholder="Server URL" value="http://localhost:8000" class="bg-slate-800 text-xs px-3 py-1.5 rounded border border-slate-700 w-56 text-slate-200">
+      <input id="apiKey" type="password" placeholder="API Key" value="sk-sandebox-dev-key" class="bg-slate-800 text-xs px-3 py-1.5 rounded border border-slate-700 w-44 text-slate-200">
+      <button onclick="refreshAll()" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold px-3 py-1.5 rounded transition">Refresh</button>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-6 space-y-6">
+    <!-- Stats Cards -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <div class="text-xs text-slate-400 font-medium">Active Sandboxes</div>
+        <div id="activeCount" class="text-2xl font-bold text-white mt-1">-</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <div class="text-xs text-slate-400 font-medium">Isolation Runtime</div>
+        <div id="runtimeClass" class="text-2xl font-bold text-emerald-400 mt-1">-</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <div class="text-xs text-slate-400 font-medium">Kubernetes Namespace</div>
+        <div id="namespace" class="text-2xl font-bold text-slate-200 mt-1">-</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <div class="text-xs text-slate-400 font-medium">Server Uptime</div>
+        <div id="uptime" class="text-2xl font-bold text-slate-200 mt-1">-</div>
+      </div>
+    </section>
+
+    <!-- Sandboxes View -->
+    <section class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+        <h2 class="text-base font-semibold text-white">Active Sandboxes</h2>
+        <span class="text-xs text-slate-400" id="sandboxSummary">0 running</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-800/50 text-slate-400 uppercase tracking-wider font-medium">
+            <tr>
+              <th class="px-6 py-3">Session ID</th>
+              <th class="px-6 py-3">Workspace</th>
+              <th class="px-6 py-3">Pod Name</th>
+              <th class="px-6 py-3">Status</th>
+              <th class="px-6 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="sandboxesTable" class="divide-y divide-slate-800 text-slate-300">
+            <tr><td colspan="5" class="px-6 py-6 text-center text-slate-500">No active sandboxes found.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Deployments & Builds Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Knative Services -->
+      <section class="bg-slate-900 border border-slate-800 rounded-lg p-5">
+        <h2 class="text-base font-semibold text-white mb-3">Knative Deployments</h2>
+        <div id="deploymentsList" class="space-y-2 text-xs text-slate-400">
+          <div class="text-slate-500">No custom deployments active.</div>
+        </div>
+      </section>
+
+      <!-- API Keys & Security -->
+      <section class="bg-slate-900 border border-slate-800 rounded-lg p-5">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-base font-semibold text-white">API Keys</h2>
+          <button onclick="mintApiKey()" class="bg-slate-800 hover:bg-slate-700 text-xs px-2.5 py-1 rounded border border-slate-700 text-slate-200">+ Issue Key</button>
+        </div>
+        <div id="keysList" class="space-y-2 text-xs font-mono text-slate-300">
+          <div class="text-slate-500 font-sans">Click refresh to load key fingerprints.</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    function getHeaders() {
+      const apiKey = document.getElementById('apiKey').value;
+      return {
+        'Content-Type': 'application/json',
+        'X-API-Key': apiKey,
+      };
+    }
+
+    function getBaseUrl() {
+      return document.getElementById('serverUrl').value.replace(/\/$/, '');
+    }
+
+    async function refreshAll() {
+      const baseUrl = getBaseUrl();
+      const headers = getHeaders();
+
+      try {
+        const statsRes = await fetch(`${baseUrl}/v1/admin/stats`, { headers });
+        if (statsRes.ok) {
+          const stats = await statsRes.json();
+          document.getElementById('activeCount').innerText = stats.active_sandboxes;
+          document.getElementById('runtimeClass').innerText = stats.runtime_class;
+          document.getElementById('namespace').innerText = stats.namespace;
+          document.getElementById('uptime').innerText = Math.round(stats.uptime_seconds) + 's';
+        }
+
+        const sbxRes = await fetch(`${baseUrl}/v1/sandboxes`, { headers });
+        if (sbxRes.ok) {
+          const sandboxes = await sbxRes.json();
+          document.getElementById('sandboxSummary').innerText = `${sandboxes.length} running`;
+          const table = document.getElementById('sandboxesTable');
+          if (sandboxes.length === 0) {
+            table.innerHTML = '<tr><td colspan="5" class="px-6 py-6 text-center text-slate-500">No active sandboxes.</td></tr>';
+          } else {
+            table.innerHTML = sandboxes.map(s => `
+              <tr class="hover:bg-slate-800/30">
+                <td class="px-6 py-3 font-mono">${s.id.slice(0, 12)}...</td>
+                <td class="px-6 py-3">${s.workspace_id}</td>
+                <td class="px-6 py-3 font-mono text-slate-400">${s.pod_name}</td>
+                <td class="px-6 py-3"><span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${s.status}</span></td>
+                <td class="px-6 py-3 text-right">
+                  <button onclick="killSandbox('${s.id}')" class="text-rose-400 hover:text-rose-300 font-semibold">Terminate</button>
+                </td>
+              </tr>
+            `).join('');
+          }
+        }
+
+        const keysRes = await fetch(`${baseUrl}/v1/admin/keys`, { headers });
+        if (keysRes.ok) {
+          const keys = await keysRes.json();
+          document.getElementById('keysList').innerHTML = keys.map(k => `
+            <div class="bg-slate-800/60 px-3 py-1.5 rounded flex justify-between">
+              <span>${k}</span>
+              <span class="text-emerald-400 text-[10px]">ACTIVE</span>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.error('Error fetching admin data:', e);
+      }
+    }
+
+    async function killSandbox(id) {
+      if (!confirm(`Are you sure you want to terminate sandbox ${id}?`)) return;
+      const baseUrl = getBaseUrl();
+      const headers = getHeaders();
+      await fetch(`${baseUrl}/v1/sandboxes/${id}`, { method: 'DELETE', headers });
+      await refreshAll();
+    }
+
+    async function mintApiKey() {
+      const baseUrl = getBaseUrl();
+      const headers = getHeaders();
+      const res = await fetch(`${baseUrl}/v1/admin/keys`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ prefix: 'sk-sbx' })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        alert(`New API key created:\n\n${data.key}\n\nSave this key securely!`);
+        await refreshAll();
+      }
+    }
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', refreshAll);
+  </script>
+</body>
+</html>

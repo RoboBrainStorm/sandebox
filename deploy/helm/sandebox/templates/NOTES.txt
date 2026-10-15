@@ -1,0 +1,22 @@
+========================================================================
+ sandebox has been successfully installed into namespace: {{ .Release.Namespace }}
+========================================================================
+
+1. Get the sandebox server URL:
+  export SERVER_POD=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name=sandebox,app.kubernetes.io/component=server" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace {{ .Release.Namespace }} port-forward $SERVER_POD 8000:8000 &
+  echo "sandebox Server API: http://127.0.0.1:8000"
+
+2. Get the sandebox Admin UI URL:
+{{- if .Values.admin.enabled }}
+  export ADMIN_POD=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name=sandebox,app.kubernetes.io/component=admin" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace {{ .Release.Namespace }} port-forward $ADMIN_POD 8080:80 &
+  echo "sandebox Admin UI: http://127.0.0.1:8080"
+{{- end }}
+
+3. Initial API Credentials:
+  Admin Initial Key: {{ .Values.secrets.apiKey }}
+  Admin Token:       {{ .Values.secrets.adminToken }}
+
+4. Verify isolation runtime:
+  sandebox doctor

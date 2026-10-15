@@ -1,0 +1,12 @@
+{
+  "name": "@sandebox/admin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Observability admin web panel for sandebox",
+  "scripts": {
+    "start": "npx serve public"
+  },
+  "dependencies": {
+    "@sandebox/sdk": "workspace:*"
+  }
+}
