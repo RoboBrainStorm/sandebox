@@ -6,7 +6,7 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from core import (
     ExecutionResult,
@@ -16,8 +16,9 @@ from core import (
     SandboxConfig,
     SessionIdentity,
 )
+
 from ..auth import verify_api_key
-from ..config import get_server_settings, ServerSettings
+from ..config import ServerSettings, get_server_settings
 
 router = APIRouter(prefix="/v1/sandboxes", tags=["sandboxes"])
 
@@ -126,7 +127,10 @@ async def get_sandbox(
 ) -> SandboxResponse:
     session = _active_sessions.get(session_id)
     if not session:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Sandbox {session_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Sandbox {session_id} not found",
+        )
     return SandboxResponse(
         id=session.identity.session_id,
         workspace_id=session.identity.workspace_id,
@@ -144,7 +148,10 @@ async def exec_in_sandbox(
 ) -> ExecutionResult:
     session = _active_sessions.get(session_id)
     if not session:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Sandbox {session_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Sandbox {session_id} not found",
+        )
 
     return await session.exec(command=request.command, env=request.env)
 
@@ -157,10 +164,15 @@ async def exec_stream_in_sandbox(
 ) -> StreamingResponse:
     session = _active_sessions.get(session_id)
     if not session:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Sandbox {session_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Sandbox {session_id} not found",
+        )
 
     async def event_generator():
-        async for event in session.exec_stream(command=request.command, env=request.env):
+        async for event in session.exec_stream(
+            command=request.command, env=request.env
+        ):
             yield f"data: {json.dumps({'type': event.type, 'data': event.data})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
@@ -173,7 +185,10 @@ async def stop_sandbox(
 ) -> dict[str, Any]:
     session = _active_sessions.pop(session_id, None)
     if not session:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Sandbox {session_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Sandbox {session_id} not found",
+        )
 
     await session.stop()
     return {"id": session_id, "stopped": True}
@@ -205,4 +220,7 @@ async def run_one_shot(
     elif request.command:
         return await provider.run_command(request.command)
     else:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Must provide command or code")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Must provide command or code",
+        )

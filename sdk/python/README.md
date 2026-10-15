@@ -14,6 +14,7 @@ pip install sandebox
 import asyncio
 from sandebox import AsyncSandboxClient
 
+
 async def main():
     client = AsyncSandboxClient(base_url="http://localhost:8000", api_key="sk-sbx-...")
     session = await client.create_sandbox(image="python:3.12-slim")
@@ -23,6 +24,7 @@ async def main():
     print(res.stdout)
 
     await session.stop()
+
 
 asyncio.run(main())
 ```

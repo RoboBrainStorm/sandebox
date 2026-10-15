@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Synchronize AI assistant entrypoints from AGENTS.md."""
 
-from pathlib import Path
 import re
 import sys
+from pathlib import Path
+
 
 def main() -> None:
     root_dir = Path(__file__).resolve().parent.parent
@@ -16,9 +17,13 @@ def main() -> None:
     agents_content = agents_path.read_text(encoding="utf-8")
 
     # Extract the critical invariants block
-    match = re.search(r"(> ⚠️ CRITICAL INVARIANTS[\s\S]*?)(?=\n\nThis file documents)", agents_content)
+    match = re.search(
+        r"(> ⚠️ CRITICAL INVARIANTS[\s\S]*?)(?=\n\nThis file documents)", agents_content
+    )
     if not match:
-        print("Error: Could not locate CRITICAL INVARIANTS in AGENTS.md", file=sys.stderr)
+        print(
+            "Error: Could not locate CRITICAL INVARIANTS in AGENTS.md", file=sys.stderr
+        )
         sys.exit(1)
 
     invariants = match.group(1).strip()
@@ -45,6 +50,7 @@ def main() -> None:
         target_path.write_text(generated_content, encoding="utf-8")
 
     print(f"✓ Synchronized {', '.join(targets)} from AGENTS.md.")
+
 
 if __name__ == "__main__":
     main()

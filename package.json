@@ -1,0 +1,22 @@
+{
+  "name": "sandebox-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.23.0",
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "check-types": "turbo run check-types",
+    "test:python": "PYTHONPATH=core/src:server/src uv run --python 3.12 --with pytest --with pytest-asyncio --with pytest-mock --with structlog --with httpx --with fastapi --with pydantic --with kubernetes --with kubernetes_asyncio pytest tests/ core/tests/ server/tests/ -v",
+    "lint:python": "uv run ruff check .",
+    "format:python": "uv run ruff format .",
+    "agents:sync": "python3 scripts/sync_agents.py",
+    "check:all": "openspec validate --all && turbo run test && turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0"
+  }
+}

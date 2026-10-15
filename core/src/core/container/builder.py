@@ -36,7 +36,9 @@ class ContainerBuilder:
     def buildkit_addr(self) -> str:
         return self.config.buildkit_addr
 
-    def build_and_push(self, repo_path: str, model_name: str, prefix: str = "sandebox-model") -> str:
+    def build_and_push(
+        self, repo_path: str, model_name: str, prefix: str = "sandebox-model"
+    ) -> str:
         """
         Build a Docker image from repo_path using buildkitd and push to the registry.
         Returns the pull-side image tag.
@@ -53,7 +55,9 @@ class ContainerBuilder:
         logger.info("container_build.done", model=model_name, pull_tag=pull_tag)
         return pull_tag
 
-    def build_and_push_agent(self, repo_path: str, agent_name: str, prefix: str = "sandebox-agent") -> str:
+    def build_and_push_agent(
+        self, repo_path: str, agent_name: str, prefix: str = "sandebox-agent"
+    ) -> str:
         """
         Build an agent image from repo_path and push to the registry.
         """

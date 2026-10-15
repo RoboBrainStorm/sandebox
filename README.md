@@ -66,7 +66,9 @@ sandebox run --image python:3.12-slim --command "python -c 'print(\"Hello from g
 ```python
 from sandebox import SandboxClient
 
-client = SandboxClient(base_url="http://sandebox.sandebox-system.svc.cluster.local", api_key="sk-...")
+client = SandboxClient(
+    base_url="http://sandebox.sandebox-system.svc.cluster.local", api_key="sk-..."
+)
 
 session = client.create_sandbox(image="python:3.12-slim")
 result = session.exec(["python", "-c", "import sys; print(sys.version)"])

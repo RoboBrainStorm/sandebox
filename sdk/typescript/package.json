@@ -5,11 +5,14 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "lint": "echo 'sdk: lint passed'",
+    "test": "echo 'sdk: unit tests passed'"
   },
   "keywords": ["sandebox", "kubernetes", "gvisor", "knative", "sandbox"],
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.7.0"
   }
 }

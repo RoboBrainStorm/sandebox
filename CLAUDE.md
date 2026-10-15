@@ -26,11 +26,14 @@
      2. Push branch to `origin change/{change-name}`
      3. Create Pull Request targeting `dev` (`gh pr create --base dev`)
      4. Switch back to `dev` branch (`git checkout dev`)
-6. VERIFICATION COMMANDS:
-   - Unit & Substrate Tests: `PYTHONPATH=core/src:server/src uv run --python 3.12 --with pytest --with pytest-asyncio --with pytest-mock --with structlog --with httpx --with fastapi --with pydantic --with kubernetes --with kubernetes_asyncio pytest tests/ core/tests/ server/tests/ -v`
-   - Linter: `uv run ruff check .`
-   - Formatter: `uv run ruff format --check .`
+6. MONOREPO ARCHITECTURE & VERIFICATION (Turborepo):
+   - Sandebox is managed as a polyglot Turborepo with pnpm workspaces.
+   - Full gate: `pnpm run check:all` (OpenSpec + Turbo test + Turbo lint)
+   - Monorepo Build: `pnpm run build`
+   - Monorepo Test: `pnpm run test`
+   - Monorepo Lint: `pnpm run lint`
    - OpenSpec Validation: `openspec validate --all`
+   - Python unit & substrate tests: `pnpm run test:python`
 
 ---
 

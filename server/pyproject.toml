@@ -20,3 +20,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sandebox_server"]
+
+[tool.uv.sources]
+sandebox-core = { path = "../core", editable = true }
+

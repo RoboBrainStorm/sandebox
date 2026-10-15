@@ -7,8 +7,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from core import ContainerBuilder
+
 from ..auth import verify_api_key
-from ..config import get_server_settings, ServerSettings
+from ..config import ServerSettings, get_server_settings
 
 router = APIRouter(prefix="/v1/builds", tags=["builds"])
 
@@ -81,5 +82,7 @@ async def get_build(
 ) -> BuildResponse:
     b = _builds.get(build_id)
     if not b:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Build {build_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Build {build_id} not found"
+        )
     return BuildResponse(**b)

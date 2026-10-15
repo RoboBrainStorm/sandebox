@@ -1,5 +1,6 @@
 from pathlib import Path
-import pytest
+
+from core.utils import get_pod_name, get_service_name
 
 from core import (
     ContainerBuilder,
@@ -9,7 +10,6 @@ from core import (
     SandboxConfig,
     SessionIdentity,
 )
-from core.utils import get_pod_name, get_service_name
 
 
 def test_name_derivation():
@@ -76,4 +76,6 @@ def test_no_app_imports_in_core():
         if "from app" in content or "import app." in content:
             violating_files.append(str(py_file))
 
-    assert violating_files == [], f"Found forbidden app.* imports in core modules: {violating_files}"
+    assert violating_files == [], (
+        f"Found forbidden app.* imports in core modules: {violating_files}"
+    )

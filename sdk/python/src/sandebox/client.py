@@ -5,7 +5,12 @@ from typing import Any
 
 import httpx
 
-from .errors import SandboxAuthError, SandboxConnectionError, SandboxError, SandboxNotFoundError
+from .errors import (
+    SandboxAuthError,
+    SandboxConnectionError,
+    SandboxError,
+    SandboxNotFoundError,
+)
 from .models import (
     AdminStatsResponse,
     BuildResponse,
@@ -23,10 +28,16 @@ class AsyncSandboxClient:
         api_key: str | None = None,
         timeout: float = 60.0,
     ):
-        self.base_url = (base_url or os.environ.get("SANDEBOX_URL", "http://localhost:8000")).rstrip("/")
-        self.api_key = api_key or os.environ.get("SANDEBOX_API_KEY", "sk-sandebox-dev-key")
+        self.base_url = (
+            base_url or os.environ.get("SANDEBOX_URL", "http://localhost:8000")
+        ).rstrip("/")
+        self.api_key = api_key or os.environ.get(
+            "SANDEBOX_API_KEY", "sk-sandebox-dev-key"
+        )
         headers = {"X-API-Key": self.api_key}
-        self._client = httpx.AsyncClient(base_url=self.base_url, headers=headers, timeout=timeout)
+        self._client = httpx.AsyncClient(
+            base_url=self.base_url, headers=headers, timeout=timeout
+        )
 
     async def __aenter__(self) -> AsyncSandboxClient:
         return self
@@ -43,7 +54,9 @@ class AsyncSandboxClient:
         if resp.status_code == 404:
             raise SandboxNotFoundError(f"Resource not found: {resp.text}")
         if not resp.is_success:
-            raise SandboxError(f"API request failed with status {resp.status_code}: {resp.text}")
+            raise SandboxError(
+                f"API request failed with status {resp.status_code}: {resp.text}"
+            )
 
     async def create_sandbox(
         self,
@@ -65,7 +78,9 @@ class AsyncSandboxClient:
         try:
             resp = await self._client.post("/v1/sandboxes", json=payload)
         except httpx.ConnectError as exc:
-            raise SandboxConnectionError(f"Failed to connect to sandebox server at {self.base_url}") from exc
+            raise SandboxConnectionError(
+                f"Failed to connect to sandebox server at {self.base_url}"
+            ) from exc
 
         self._handle_error(resp)
         data = resp.json()
@@ -87,17 +102,23 @@ class AsyncSandboxClient:
         return resp.json()
 
     async def run_command(self, command: str) -> ExecutionResult:
-        resp = await self._client.post("/v1/sandboxes/run", json={"command": command, "language": "bash"})
+        resp = await self._client.post(
+            "/v1/sandboxes/run", json={"command": command, "language": "bash"}
+        )
         self._handle_error(resp)
         return ExecutionResult(**resp.json())
 
     async def run_python(self, code: str) -> ExecutionResult:
-        resp = await self._client.post("/v1/sandboxes/run", json={"code": code, "language": "python"})
+        resp = await self._client.post(
+            "/v1/sandboxes/run", json={"code": code, "language": "python"}
+        )
         self._handle_error(resp)
         return ExecutionResult(**resp.json())
 
     async def run_node(self, code: str) -> ExecutionResult:
-        resp = await self._client.post("/v1/sandboxes/run", json={"code": code, "language": "node"})
+        resp = await self._client.post(
+            "/v1/sandboxes/run", json={"code": code, "language": "node"}
+        )
         self._handle_error(resp)
         return ExecutionResult(**resp.json())
 
@@ -145,13 +166,17 @@ class AsyncSandboxClient:
         self._handle_error(resp)
         return DeploymentResponse(**resp.json())
 
-    async def get_deployment(self, name: str, namespace: str | None = None) -> DeploymentResponse:
+    async def get_deployment(
+        self, name: str, namespace: str | None = None
+    ) -> DeploymentResponse:
         params = {"namespace": namespace} if namespace else {}
         resp = await self._client.get(f"/v1/deployments/{name}", params=params)
         self._handle_error(resp)
         return DeploymentResponse(**resp.json())
 
-    async def delete_deployment(self, name: str, namespace: str | None = None) -> dict[str, Any]:
+    async def delete_deployment(
+        self, name: str, namespace: str | None = None
+    ) -> dict[str, Any]:
         params = {"namespace": namespace} if namespace else {}
         resp = await self._client.delete(f"/v1/deployments/{name}", params=params)
         self._handle_error(resp)
@@ -170,10 +195,16 @@ class SandboxClient:
         api_key: str | None = None,
         timeout: float = 60.0,
     ):
-        self.base_url = (base_url or os.environ.get("SANDEBOX_URL", "http://localhost:8000")).rstrip("/")
-        self.api_key = api_key or os.environ.get("SANDEBOX_API_KEY", "sk-sandebox-dev-key")
+        self.base_url = (
+            base_url or os.environ.get("SANDEBOX_URL", "http://localhost:8000")
+        ).rstrip("/")
+        self.api_key = api_key or os.environ.get(
+            "SANDEBOX_API_KEY", "sk-sandebox-dev-key"
+        )
         headers = {"X-API-Key": self.api_key}
-        self._client = httpx.Client(base_url=self.base_url, headers=headers, timeout=timeout)
+        self._client = httpx.Client(
+            base_url=self.base_url, headers=headers, timeout=timeout
+        )
 
     def __enter__(self) -> SandboxClient:
         return self
@@ -190,7 +221,9 @@ class SandboxClient:
         if resp.status_code == 404:
             raise SandboxNotFoundError(f"Resource not found: {resp.text}")
         if not resp.is_success:
-            raise SandboxError(f"API request failed with status {resp.status_code}: {resp.text}")
+            raise SandboxError(
+                f"API request failed with status {resp.status_code}: {resp.text}"
+            )
 
     def create_sandbox(
         self,
@@ -212,13 +245,17 @@ class SandboxClient:
         try:
             resp = self._client.post("/v1/sandboxes", json=payload)
         except httpx.ConnectError as exc:
-            raise SandboxConnectionError(f"Failed to connect to sandebox server at {self.base_url}") from exc
+            raise SandboxConnectionError(
+                f"Failed to connect to sandebox server at {self.base_url}"
+            ) from exc
 
         self._handle_error(resp)
         data = resp.json()
         return SandboxSessionClient(session_id=data["id"], client=self._client)
 
     def run_command(self, command: str) -> ExecutionResult:
-        resp = self._client.post("/v1/sandboxes/run", json={"command": command, "language": "bash"})
+        resp = self._client.post(
+            "/v1/sandboxes/run", json={"command": command, "language": "bash"}
+        )
         self._handle_error(resp)
         return ExecutionResult(**resp.json())

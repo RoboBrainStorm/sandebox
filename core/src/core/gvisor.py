@@ -26,7 +26,11 @@ class GvisorSandbox:
     @property
     def runtime(self) -> str:
         # If runtime_class is 'gvisor', the docker runtime name is typically 'runsc'
-        return "runsc" if self.config.runtime_class == "gvisor" else self.config.runtime_class
+        return (
+            "runsc"
+            if self.config.runtime_class == "gvisor"
+            else self.config.runtime_class
+        )
 
     @property
     def cpus(self) -> str:

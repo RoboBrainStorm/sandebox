@@ -1,4 +1,3 @@
-import pytest
 from core.contract import SessionIdentity
 from core.utils import get_pod_name, get_service_name
 

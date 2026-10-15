@@ -1,0 +1,11 @@
+{
+  "name": "@sandebox/server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "uv run --with pytest --with pytest-asyncio --with pytest-mock pytest tests/ -v",
+    "lint": "uv run --with ruff ruff check .",
+    "format": "uv run --with ruff ruff format --check .",
+    "dev": "uv run uvicorn sandebox_server.app:app --reload --port 8080"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@sandebox/core",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "uv run --with pytest --with pytest-asyncio --with pytest-mock pytest tests/ ../tests/ -v",
+    "lint": "uv run --with ruff ruff check .",
+    "format": "uv run --with ruff ruff format --check ."
+  }
+}

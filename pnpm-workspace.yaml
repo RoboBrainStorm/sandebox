@@ -1,0 +1,6 @@
+packages:
+  - "admin"
+  - "core"
+  - "server"
+  - "cli"
+  - "sdk/*"

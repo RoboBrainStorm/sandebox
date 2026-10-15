@@ -1,10 +1,6 @@
 from __future__ import annotations
 
-import shlex
 from typing import Annotated, Any
-
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
 
 from core.kubernetes.client import get_k8s_client
 from core.kubernetes.knative import (
@@ -12,8 +8,11 @@ from core.kubernetes.knative import (
     deploy_knative_service,
     get_knative_service,
 )
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
+
 from ..auth import verify_api_key
-from ..config import get_server_settings, ServerSettings
+from ..config import ServerSettings, get_server_settings
 
 router = APIRouter(prefix="/v1/deployments", tags=["deployments"])
 
@@ -42,8 +41,16 @@ async def create_deployment(
     settings: Annotated[ServerSettings, Depends(get_server_settings)],
 ) -> DeploymentResponse:
     ns = request.namespace or settings.sandbox_config.namespace
-    min_s = request.min_scale if request.min_scale is not None else settings.sandbox_config.min_scale
-    max_s = request.max_scale if request.max_scale is not None else settings.sandbox_config.max_scale
+    min_s = (
+        request.min_scale
+        if request.min_scale is not None
+        else settings.sandbox_config.min_scale
+    )
+    max_s = (
+        request.max_scale
+        if request.max_scale is not None
+        else settings.sandbox_config.max_scale
+    )
 
     try:
         url = await deploy_knative_service(
@@ -81,12 +88,19 @@ async def get_deployment(
     try:
         res = await get_knative_service(api_client, ns, name)
     except Exception as exc:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)
+        ) from exc
 
     if not res:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Deployment {name} not found in {ns}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Deployment {name} not found in {ns}",
+        )
 
-    url = (res.get("status") or {}).get("url") or f"http://{name}.{ns}.svc.cluster.local"
+    url = (res.get("status") or {}).get(
+        "url"
+    ) or f"http://{name}.{ns}.svc.cluster.local"
     return DeploymentResponse(
         name=name,
         namespace=ns,
@@ -107,6 +121,8 @@ async def remove_deployment(
     try:
         await delete_knative_service(api_client, ns, name)
     except Exception as exc:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)
+        ) from exc
 
     return {"name": name, "deleted": True}

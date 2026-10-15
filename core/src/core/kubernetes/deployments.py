@@ -41,9 +41,7 @@ async def create_deployment(
             template=client.V1PodTemplateSpec(
                 metadata=client.V1ObjectMeta(labels=pod_labels),
                 spec=client.V1PodSpec(
-                    containers=[
-                        client.V1Container(**container_kwargs)
-                    ]
+                    containers=[client.V1Container(**container_kwargs)]
                 ),
             ),
         ),

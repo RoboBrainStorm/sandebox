@@ -4,9 +4,9 @@ import secrets
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Security, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyHeader
+from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 
-from .config import get_server_settings, ServerSettings
+from .config import ServerSettings, get_server_settings
 
 _api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 _bearer_auth = HTTPBearer(auto_error=False)
@@ -27,7 +27,9 @@ def issue_api_key(prefix: str = "sk-sbx") -> str:
 
 async def verify_api_key(
     header_key: Annotated[str | None, Security(_api_key_header)] = None,
-    bearer: Annotated[HTTPAuthorizationCredentials | None, Security(_bearer_auth)] = None,
+    bearer: Annotated[
+        HTTPAuthorizationCredentials | None, Security(_bearer_auth)
+    ] = None,
     settings: Annotated[ServerSettings, Depends(get_server_settings)] = None,
 ) -> str:
     provided_key: str | None = header_key or (bearer.credentials if bearer else None)

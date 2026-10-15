@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import os
 import sys
 
 from core.config import SandboxConfig
-from core.kubernetes.client import get_k8s_client, close_k8s_client
+from core.kubernetes.client import close_k8s_client, get_k8s_client
 
 
 async def run_doctor(args: argparse.Namespace) -> int:
@@ -22,8 +21,9 @@ async def run_doctor(args: argparse.Namespace) -> int:
     try:
         api_client = await get_k8s_client()
         from kubernetes_asyncio import client
+
         core_v1 = client.CoreV1Api(api_client)
-        ns_list = await core_v1.list_namespace(limit=1)
+        await core_v1.list_namespace(limit=1)
         print("  ✓ Connected to Kubernetes API successfully.")
     except Exception as exc:
         print(f"  ✗ Failed to reach Kubernetes API: {exc}")
@@ -35,14 +35,19 @@ async def run_doctor(args: argparse.Namespace) -> int:
     if api_client:
         try:
             from kubernetes_asyncio import client
+
             node_v1 = client.NodeV1Api(api_client)
             rc_list = await node_v1.list_runtime_class()
             classes = [rc.metadata.name for rc in rc_list.items]
             if config.runtime_class in classes:
                 print(f"  ✓ RuntimeClass '{config.runtime_class}' found in cluster.")
             else:
-                print(f"  ✗ RuntimeClass '{config.runtime_class}' NOT found in cluster! Available classes: {classes or 'none'}")
-                print(f"    gVisor (runsc) is required for sandebox isolation. Please install the gVisor RuntimeClass.")
+                print(
+                    f"  ✗ RuntimeClass '{config.runtime_class}' NOT found in cluster! Available classes: {classes or 'none'}"
+                )
+                print(
+                    "    gVisor (runsc) is required for sandebox isolation. Please install the gVisor RuntimeClass."
+                )
                 overall_ok = False
         except Exception as exc:
             print(f"  ✗ Failed to query RuntimeClasses: {exc}")
@@ -55,6 +60,7 @@ async def run_doctor(args: argparse.Namespace) -> int:
     if api_client:
         try:
             from kubernetes_asyncio import client
+
             custom = client.CustomObjectsApi(api_client)
             await custom.list_namespaced_custom_object(
                 group="serving.knative.dev",
@@ -67,7 +73,9 @@ async def run_doctor(args: argparse.Namespace) -> int:
         except Exception as exc:
             err_msg = str(exc)
             if "Not Found" in err_msg or "404" in err_msg:
-                print("  ✗ Knative Serving CRD 'services.serving.knative.dev' not found. Is Knative installed?")
+                print(
+                    "  ✗ Knative Serving CRD 'services.serving.knative.dev' not found. Is Knative installed?"
+                )
                 overall_ok = False
             else:
                 # Namespace might not exist yet, but CRD itself exists
@@ -83,7 +91,9 @@ async def run_doctor(args: argparse.Namespace) -> int:
         print("RESULT: All cluster and runtime requirements satisfied! ✓")
         return 0
     else:
-        print("RESULT: Diagnostic issues identified above. Please resolve before deployment.")
+        print(
+            "RESULT: Diagnostic issues identified above. Please resolve before deployment."
+        )
         return 1
 
 
@@ -106,13 +116,18 @@ async def run_workload(args: argparse.Namespace) -> int:
     server_url = getattr(args, "server_url", None)
     if server_url:
         from sandebox import AsyncSandboxClient
+
         print(f"Running via sandebox server at {server_url}...")
-        client = AsyncSandboxClient(base_url=server_url, api_key=getattr(args, "api_key", None))
+        client = AsyncSandboxClient(
+            base_url=server_url, api_key=getattr(args, "api_key", None)
+        )
         try:
             if args.code:
                 res = await client.run_python(args.code)
             else:
-                res = await client.run_command(args.command or "echo 'Hello from sandebox'")
+                res = await client.run_command(
+                    args.command or "echo 'Hello from sandebox'"
+                )
             print("STDOUT:\n" + res.stdout)
             if res.stderr:
                 print("STDERR:\n" + res.stderr)
@@ -121,12 +136,15 @@ async def run_workload(args: argparse.Namespace) -> int:
             await client.close()
     else:
         from core.provider import KnativeProvider
+
         print("Running directly via core engine...")
         provider = KnativeProvider()
         if args.code:
             res = await provider.run_python(args.code)
         else:
-            res = await provider.run_command(args.command or "echo 'Hello from sandebox'")
+            res = await provider.run_command(
+                args.command or "echo 'Hello from sandebox'"
+            )
         print("STDOUT:\n" + res.stdout)
         if res.stderr:
             print("STDERR:\n" + res.stderr)
@@ -141,17 +159,27 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # doctor
-    subparsers.add_parser("doctor", help="Check Kubernetes connectivity and gVisor RuntimeClass")
+    subparsers.add_parser(
+        "doctor", help="Check Kubernetes connectivity and gVisor RuntimeClass"
+    )
 
     # validate
     subparsers.add_parser("validate", help="Validate runtime configuration")
 
     # run
-    run_parser = subparsers.add_parser("run", help="Run a one-shot command or code snippet in a sandbox")
-    run_parser.add_argument("--command", "-c", type=str, default=None, help="Shell command to run")
+    run_parser = subparsers.add_parser(
+        "run", help="Run a one-shot command or code snippet in a sandbox"
+    )
+    run_parser.add_argument(
+        "--command", "-c", type=str, default=None, help="Shell command to run"
+    )
     run_parser.add_argument("--code", type=str, default=None, help="Python code to run")
-    run_parser.add_argument("--server-url", type=str, default=None, help="Optional sandebox server URL")
-    run_parser.add_argument("--api-key", type=str, default=None, help="API key for server")
+    run_parser.add_argument(
+        "--server-url", type=str, default=None, help="Optional sandebox server URL"
+    )
+    run_parser.add_argument(
+        "--api-key", type=str, default=None, help="API key for server"
+    )
 
     parsed = parser.parse_args()
 

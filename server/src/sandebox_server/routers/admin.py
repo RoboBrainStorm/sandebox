@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import time
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from ..auth import get_active_keys, issue_api_key, verify_api_key
-from ..config import get_server_settings, ServerSettings
+from ..config import ServerSettings, get_server_settings
 from .sandboxes import _active_sessions
 
 router = APIRouter(prefix="/v1/admin", tags=["admin"])

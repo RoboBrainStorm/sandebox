@@ -1,0 +1,9 @@
+{
+  "name": "@sandebox/cli",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "lint": "uv run --with ruff ruff check .",
+    "format": "uv run --with ruff ruff format --check ."
+  }
+}

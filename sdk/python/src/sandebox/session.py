@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from collections.abc import AsyncGenerator
-from typing import Any
 
 import httpx
 
@@ -25,7 +24,9 @@ class AsyncSandboxSessionClient:
         if resp.status_code == 404:
             raise SandboxNotFoundError(f"Sandbox {self.session_id} not found")
         if not resp.is_success:
-            raise SandboxError(f"Exec failed with status {resp.status_code}: {resp.text}")
+            raise SandboxError(
+                f"Exec failed with status {resp.status_code}: {resp.text}"
+            )
 
         data = resp.json()
         return ExecutionResult(**data)
@@ -42,22 +43,29 @@ class AsyncSandboxSessionClient:
             if response.status_code == 404:
                 raise SandboxNotFoundError(f"Sandbox {self.session_id} not found")
             if not response.is_success:
-                raise SandboxError(f"Exec stream failed with status {response.status_code}")
+                raise SandboxError(
+                    f"Exec stream failed with status {response.status_code}"
+                )
 
             async for line in response.aiter_lines():
                 if line.startswith("data: "):
-                    payload = line[len("data: "):].strip()
+                    payload = line[len("data: ") :].strip()
                     if payload:
                         try:
                             parsed = json.loads(payload)
-                            yield SandboxEvent(type=parsed.get("type", "stdout"), data=parsed.get("data", {}))
+                            yield SandboxEvent(
+                                type=parsed.get("type", "stdout"),
+                                data=parsed.get("data", {}),
+                            )
                         except Exception:
                             continue
 
     async def stop(self) -> None:
         resp = await self._client.delete(f"/v1/sandboxes/{self.session_id}")
         if resp.status_code != 404 and not resp.is_success:
-            raise SandboxError(f"Stop failed with status {resp.status_code}: {resp.text}")
+            raise SandboxError(
+                f"Stop failed with status {resp.status_code}: {resp.text}"
+            )
 
 
 class SandboxSessionClient:
@@ -65,9 +73,7 @@ class SandboxSessionClient:
         self.session_id = session_id
         self._client = client
 
-    def exec(
-        self, command: str, env: dict[str, str] | None = None
-    ) -> ExecutionResult:
+    def exec(self, command: str, env: dict[str, str] | None = None) -> ExecutionResult:
         resp = self._client.post(
             f"/v1/sandboxes/{self.session_id}/exec",
             json={"command": command, "env": env},
@@ -75,7 +81,9 @@ class SandboxSessionClient:
         if resp.status_code == 404:
             raise SandboxNotFoundError(f"Sandbox {self.session_id} not found")
         if not resp.is_success:
-            raise SandboxError(f"Exec failed with status {resp.status_code}: {resp.text}")
+            raise SandboxError(
+                f"Exec failed with status {resp.status_code}: {resp.text}"
+            )
 
         data = resp.json()
         return ExecutionResult(**data)
@@ -83,4 +91,6 @@ class SandboxSessionClient:
     def stop(self) -> None:
         resp = self._client.delete(f"/v1/sandboxes/{self.session_id}")
         if resp.status_code != 404 and not resp.is_success:
-            raise SandboxError(f"Stop failed with status {resp.status_code}: {resp.text}")
+            raise SandboxError(
+                f"Stop failed with status {resp.status_code}: {resp.text}"
+            )

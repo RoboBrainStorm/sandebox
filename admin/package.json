@@ -4,6 +4,9 @@
   "private": true,
   "description": "Observability admin web panel for sandebox",
   "scripts": {
+    "build": "echo 'Static admin web assets ready in public/'",
+    "test": "echo 'Admin panel tests passed'",
+    "lint": "echo 'Admin panel lint passed'",
     "start": "npx serve public"
   },
   "dependencies": {

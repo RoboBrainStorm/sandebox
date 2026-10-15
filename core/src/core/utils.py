@@ -21,5 +21,7 @@ def get_pod_name(identity: SessionIdentity, prefix: str = "rb-sbx") -> str:
     return _sanitize_name(identity.stable_key, prefix)
 
 
-def get_service_name(identity: SessionIdentity, port: int, prefix: str = "rb-srv") -> str:
+def get_service_name(
+    identity: SessionIdentity, port: int, prefix: str = "rb-srv"
+) -> str:
     return _sanitize_name(f"{identity.stable_key}-{port}", prefix)
